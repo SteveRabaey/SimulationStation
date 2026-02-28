@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="SpaceStationSim.App/SpaceStationSim.App.csproj" Id="660a2bf2-890c-460b-b670-229568cd3400" />
+  <Project Path="SpaceStationSim.Core/SpaceStationSim.Core.csproj" Id="861fb139-49e1-4ba2-b590-620ec0312b57" />
+</Solution>
