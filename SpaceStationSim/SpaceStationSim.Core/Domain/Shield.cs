@@ -4,8 +4,16 @@ using System.Text;
 
 namespace SpaceStationSim.Core.Domain {
     public class Shield {
-        private bool _shieldEnabled;
-        private double _currentStrength;
-        private double _requiredPower;
+        public bool ShieldEnabled { get; set; }
+        public double CurrentStrength { get; set; }
+        public double RequiredPowerPerSecond = 3;
+
+        public Shield()
+        {
+            ShieldEnabled = true;
+            CurrentStrength = 100;
+        }
+
+
     }
 }

@@ -1,18 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata;
 using System.Text;
 
 namespace SpaceStationSim.Core.Domain {
     /// <summary>
-    /// The battery class is for helping manage the power storage. Adding where the powergenerator needs helpt.
+    /// The battery class is for helping manage the power storage. Adding where the powergenerator needs help.
     /// </summary>
     public class Battery {
-        private double _currentChargeLevel; // Current charge level of the battery
-        private double _maxChargeLevel; // Maximum charge level of the battery
+        public double CurrentChargeLevel { get; private set; } // Current charge level of the battery
+        public static readonly double MaxChargeLevel = 100; // Maximum charge level of the battery
+        public static readonly double MinChargeLevel = 0;
 
+        public Battery(double currentChargeLevel)
+        {
+            SetCurrentCharge(currentChargeLevel);
+        }
 
-        private void Charge(double amount) {
-            _currentChargeLevel = Math.Min(_currentChargeLevel + amount, _maxChargeLevel);
+        private void SetCurrentCharge(double currentChargeLevel)
+        {
+            if (currentChargeLevel > MaxChargeLevel) throw new  ArgumentOutOfRangeException($"Charge level {currentChargeLevel} is too Heigh");
+            if(currentChargeLevel < MinChargeLevel) throw new ArgumentOutOfRangeException($"Charge level {currentChargeLevel} is too Low");
+            CurrentChargeLevel = currentChargeLevel;
+        }
+        public void Charge(double amount) {
+            CurrentChargeLevel = Math.Min(CurrentChargeLevel + amount, MaxChargeLevel);
+        }
+
+        public double DeCharge(double amount)
+        {
+            var provided = Math.Min(amount , CurrentChargeLevel);
+            CurrentChargeLevel -= provided;
+            return provided;
         }
 
     }
