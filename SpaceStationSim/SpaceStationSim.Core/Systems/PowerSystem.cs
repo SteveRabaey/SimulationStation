@@ -8,11 +8,16 @@ using SpaceStationSim.Core.Simulation;
 namespace SpaceStationSim.Core.Systems {
     public class PowerSystem : ISystem {
         private readonly ILogger<PowerSystem> _logger;
+        private StationState _state { get; }
         private bool _logged30 = false;
         private bool _logged10 = false;
 
-        public PowerSystem(ILogger<PowerSystem> logger) {
+        public PowerSystem(ILogger<PowerSystem> logger, StationState stationState) {
             _logger = logger;
+            _state = stationState;
+           
+            _state.Battery.OnLowCharge += HandleLowCharge;
+            _state.Battery.OnCriticalCharge += HandleCriticalCharge;
         }
 
         public void Update(StationState state, SimTime time)
@@ -26,16 +31,7 @@ namespace SpaceStationSim.Core.Systems {
             if (net < 0)
             {
                 state.Battery.DeCharge(-net);
-
-                if (state.Battery.CurrentChargeLevel < 30 && state.Battery.CurrentChargeLevel > 10 && _logged30 == false) {
-                    _logger.Log(LogLevel.Warning, "Warining: Battery levels are under 30%");
-                    _logged30 = true;
-                    _logged10 = false;
-                }
-                if (state.Battery.CurrentChargeLevel < 10 && _logged10 == false) {
-                    _logger.Log(LogLevel.Critical, "Critical: Battery levels are under 10%");
-                    _logged10 = true;
-                }
+              
 
             } else
             {
@@ -43,5 +39,23 @@ namespace SpaceStationSim.Core.Systems {
                 if (_logged30 == true) _logger.Log(LogLevel.Information, "BatteryLevels are back above 30");
             }
         }
+
+        private void HandleLowCharge() {
+
+            if (_state.Battery.CurrentChargeLevel > 10 && _logged30 == false) {
+                _logger.Log(LogLevel.Warning, "Warining: Battery levels are under 30%");
+                _logged30 = true;
+                _logged10 = false;
+            }
+            
+        }
+        private void HandleCriticalCharge() {
+            if (_logged10 == false) {
+                _logger.Log(LogLevel.Critical, "Critical: Battery levels are under 10%");
+                _logged10 = true;
+            }
+        }
+            
+        
     }
 }

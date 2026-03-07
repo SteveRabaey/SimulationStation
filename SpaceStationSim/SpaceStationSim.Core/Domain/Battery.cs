@@ -12,6 +12,9 @@ namespace SpaceStationSim.Core.Domain {
         public static readonly double MaxChargeLevel = 100; // Maximum charge level of the battery
         public static readonly double MinChargeLevel = 0;
 
+        //events
+        public event Action? OnLowCharge;
+        public event Action? OnCriticalCharge;
         public Battery(double currentChargeLevel)
         {
             SetCurrentCharge(currentChargeLevel);
@@ -31,6 +34,14 @@ namespace SpaceStationSim.Core.Domain {
         {
             var provided = Math.Min(amount , CurrentChargeLevel);
             CurrentChargeLevel -= provided;
+
+            if(CurrentChargeLevel < 30 && CurrentChargeLevel > 10) {
+                OnLowCharge?.Invoke();
+            }
+            if (CurrentChargeLevel < 10) {
+                OnLowCharge?.Invoke();
+            }
+
             return provided;
         }
 
