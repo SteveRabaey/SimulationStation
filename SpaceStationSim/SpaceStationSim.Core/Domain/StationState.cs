@@ -11,7 +11,7 @@ namespace SpaceStationSim.Core.Domain {
 
         public StationState()
         {
-            Battery = new Battery(60);
+            Battery = new Battery(50);
             PowerGenerator = new PowerGenerator();
             Shield = new Shield();
         }

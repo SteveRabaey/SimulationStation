@@ -1,40 +1,37 @@
-﻿using SpaceStationSim.Core.Domain;
+﻿using Microsoft.Extensions.Logging;
+using SpaceStationSim.Core.Domain;
 using SpaceStationSim.Core.Simulation;
 using SpaceStationSim.Core.Systems;
 
-namespace SpaceStationSim.App
-{
-    internal class Program
-    {
-        static void Main(string[] args)
-        {
+namespace SpaceStationSim.App {
+    internal class Program {
+        static async Task Main(string[] args) {
+
+            //logfactory to create loggers and writing to the console
+            using ILoggerFactory factory = LoggerFactory.Create(builder =>
+                builder.AddConsole()
+            );
+            ILogger logger = factory.CreateLogger<Program>();
+            logger.LogInformation("Logger starting up");
+
+
             SimulationKernel kernel = new SimulationKernel();
-            
-            kernel.RegisterSystem(new PowerSystem());
+
             StationState state = new StationState();
-            
-            long tick = 0;
-            TimeSpan delta = TimeSpan.FromSeconds(0.1);
-            TimeSpan total = TimeSpan.FromSeconds(0);
-            
-            TimeSpan logTimer = TimeSpan.Zero;
 
-            while (true)
-            {
-                kernel.Step(state, tick, delta, total);
-                tick += delta.Ticks;
-                total += delta;
-                
-                logTimer += delta;
+            var powerSystemLogger = factory.CreateLogger<PowerSystem>();
+            kernel.RegisterSystem(new PowerSystem(powerSystemLogger));
 
-                if (logTimer >= TimeSpan.FromSeconds(1))
-                {
-                    Console.WriteLine(state.Battery.CurrentChargeLevel);
-                    logTimer = TimeSpan.Zero;
-                }
-                Thread.Sleep(delta);
+            // Running the simulation
+            SimulationRunner runner = new SimulationRunner(kernel, state);
 
-            }
+
+            //Making the clr c cancelation event to send cancelationtoken
+            using var cts = new CancellationTokenSource();
+            Console.CancelKeyPress += (_, e) => { e.Cancel = true; cts.Cancel(); };
+            await runner.RunSimulation(cts.Token);
+
+
         }
     }
 }
