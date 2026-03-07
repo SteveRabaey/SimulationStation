@@ -39,7 +39,7 @@ namespace SpaceStationSim.Core.Domain {
                 OnLowCharge?.Invoke();
             }
             if (CurrentChargeLevel < 10) {
-                OnLowCharge?.Invoke();
+                OnCriticalCharge?.Invoke();
             }
 
             return provided;
