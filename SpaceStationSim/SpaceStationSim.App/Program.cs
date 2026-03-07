@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using SpaceStationSim.Core.Domain;
 using SpaceStationSim.Core.Simulation;
 using SpaceStationSim.Core.Systems;
@@ -7,23 +8,30 @@ namespace SpaceStationSim.App {
     internal class Program {
         static async Task Main(string[] args) {
 
-            //logfactory to create loggers and writing to the console
-            using ILoggerFactory factory = LoggerFactory.Create(builder =>
-                builder.AddConsole()
-            );
-            ILogger logger = factory.CreateLogger<Program>();
-            logger.LogInformation("Logger starting up");
+            var services = new ServiceCollection();
 
+            services.AddLogging(builder => {
+                builder.AddConsole();
+            });
 
-            SimulationKernel kernel = new SimulationKernel();
+            services.AddSingleton<PowerSystem>();
+            services.AddSingleton<SimulationKernel>();
+            services.AddSingleton<StationState>();
+            services.AddSingleton<SimulationRunner>();
 
-            StationState state = new StationState();
+            var serviceProvidor = services.BuildServiceProvider();
 
-            var powerSystemLogger = factory.CreateLogger<PowerSystem>();
-            kernel.RegisterSystem(new PowerSystem(powerSystemLogger));
+            var logger = serviceProvidor.GetRequiredService<ILogger<Program>>();
+            logger.Log(LogLevel.Information, "Logging starts :)");
+
+            var kernelServies = serviceProvidor.GetRequiredService<SimulationKernel>();
+            var powerSystem = serviceProvidor.GetRequiredService<PowerSystem>();
+            kernelServies.RegisterSystem(powerSystem);
+
+           
 
             // Running the simulation
-            SimulationRunner runner = new SimulationRunner(kernel, state);
+            var  runner = serviceProvidor.GetRequiredService<SimulationRunner>();
 
 
             //Making the clr c cancelation event to send cancelationtoken
